@@ -30,6 +30,7 @@
 
   body {
     font-family: var(--sans);
+    font-size: 13px;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
@@ -476,7 +477,7 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 8px;
-    overflow: hidden;
+    overflow: visible;
     transition: border-color 0.2s;
   }
   .result-card:hover { border-color: var(--border2); }
@@ -668,6 +669,34 @@
     text-transform: uppercase;
     margin-bottom: 12px;
   }
+
+/* ── Metric Tooltip ─────────────────────────────────────────── */
+#metric-tooltip {
+  position: fixed;
+  z-index: 9999;
+  background: #1a2030;
+  border: 1px solid #354060;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #c8d0e8;
+  max-width: 240px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s;
+  line-height: 1.6;
+}
+#metric-tooltip .tt-title {
+  font-weight: 700;
+  color: #e8eaf0;
+  margin-bottom: 3px;
+}
+#metric-tooltip .tt-formula {
+  color: #69f0ae;
+  font-size: 10px;
+  margin-top: 2px;
+}
 </style>
 </head>
 <body>
@@ -701,35 +730,28 @@
       <!-- Population type selector -->
       <div style="margin-bottom:20px;">
         <div class="section-label">Population Type</div>
-        <div style="display:flex;gap:10px;">
-          <div class="pop-type-btn active" id="pop-seg" onclick="setPopType('segregating')">
-            <div class="pop-type-icon">⊕</div>
-            <div class="pop-type-name">Segregating Population</div>
-            <div class="pop-type-desc">F2, BC, RIL, etc. — MAF not meaningful</div>
-            <div id="cross-type-row" style="margin-top:10px;display:flex;flex-direction:column;gap:8px;" onclick="event.stopPropagation()">
-              <div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.08em;">EXPECTED V:H:F RATIO</div>
-              <div style="display:flex;gap:5px;flex-wrap:wrap;">
-                <div class="cross-btn active" data-preset="F2" onclick="applyPreset('F2')">F2</div>
-                <div class="cross-btn" data-preset="RIL" onclick="applyPreset('RIL')">RIL / F7+</div>
-                <div class="cross-btn" data-preset="BC1" onclick="applyPreset('BC1')">BC1</div>
-                <div class="cross-btn" data-preset="DH" onclick="applyPreset('DH')">DH</div>
-                <div class="cross-btn" data-preset="custom" id="cross-custom" onclick="applyPreset('custom')">Custom</div>
-              </div>
-              <div style="display:flex;align-items:center;gap:6px;">
-                <span style="font-family:var(--mono);font-size:11px;color:var(--text3);">V</span>
-                <input id="ratio-V" class="thr-input" type="number" min="0" step="1" value="1" style="width:48px;" oninput="onRatioInput()">
-                <span style="font-family:var(--mono);font-size:11px;color:var(--text3);">H</span>
-                <input id="ratio-H" class="thr-input" type="number" min="0" step="1" value="2" style="width:48px;" oninput="onRatioInput()">
-                <span style="font-family:var(--mono);font-size:11px;color:var(--text3);">F</span>
-                <input id="ratio-F" class="thr-input" type="number" min="0" step="1" value="1" style="width:48px;" oninput="onRatioInput()">
-                <span id="ratio-preview" style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:4px;">→ 1:2:1</span>
-              </div>
-            </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
+            <div class="cross-btn active" data-preset="F2" onclick="applyPreset('F2')">F2</div>
+            <div class="cross-btn" data-preset="RIL" onclick="applyPreset('RIL')">RIL / F7+</div>
+            <div class="cross-btn" data-preset="BC1" onclick="applyPreset('BC1')">BC1</div>
+            <div class="cross-btn" data-preset="DH" onclick="applyPreset('DH')">DH</div>
+            <div class="cross-btn" data-preset="custom" id="cross-custom" onclick="applyPreset('custom')">Custom</div>
+            <div style="width:1px;height:20px;background:var(--border2);margin:0 6px;"></div>
+            <div class="cross-btn" data-preset="panel" onclick="applyPreset('panel')">Germplasm Panel</div>
           </div>
-          <div class="pop-type-btn" id="pop-panel" onclick="setPopType('panel')">
-            <div class="pop-type-icon">⊞</div>
-            <div class="pop-type-name">Germplasm Panel</div>
-            <div class="pop-type-desc">Accessions / varieties — MAF will be calculated</div>
+          <div id="cross-type-row" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.08em;margin-right:2px;">EXPECTED V:H:F</span>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--text3);">V</span>
+            <input id="ratio-V" class="thr-input" type="number" min="0" step="1" value="1" style="width:48px;" oninput="onRatioInput()">
+            <span style="font-family:var(--mono);font-size:11px;color:var(--text3);">H</span>
+            <input id="ratio-H" class="thr-input" type="number" min="0" step="1" value="2" style="width:48px;" oninput="onRatioInput()">
+            <span style="font-family:var(--mono);font-size:11px;color:var(--text3);">F</span>
+            <input id="ratio-F" class="thr-input" type="number" min="0" step="1" value="1" style="width:48px;" oninput="onRatioInput()">
+            <span id="ratio-preview" style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:4px;">→ 1:2:1</span>
+          </div>
+          <div id="pop-type-desc" style="font-family:var(--mono);font-size:11px;color:var(--text3);">
+            Chi-square segregation test will be shown · MAF not calculated
           </div>
         </div>
       </div>
@@ -772,7 +794,7 @@
             <span id="guide-arrow" style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-left:auto;transition:transform 0.2s;">▼</span>
           </div>
           <div id="csv-guide" style="display:none;border-top:1px solid var(--border);">
-            <svg width="100%" viewBox="0 0 680 740" style="display:block;background:#0f1117;">
+            <svg width="100%" viewBox="0 0 680 440" style="display:block;background:#0f1117;">
               <defs>
                 <marker id="garrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                   <path d="M2 1L8 5L2 9" fill="none" stroke="#5a6380" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -806,11 +828,11 @@
               <rect x="40" y="87" width="108" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
               <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#8a95b0" text-anchor="middle" dominant-baseline="central" x="94" y="101">WM-001</text>
               <rect x="156" y="87" width="72" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#69f0ae" text-anchor="middle" dominant-baseline="central" x="192" y="101">V</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700" fill="#69f0ae" text-anchor="middle" dominant-baseline="central" x="192" y="101">V</text>
               <rect x="236" y="87" width="72" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#ff6e6e" text-anchor="middle" dominant-baseline="central" x="272" y="101">F</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700" fill="#ff6e6e" text-anchor="middle" dominant-baseline="central" x="272" y="101">F</text>
               <rect x="316" y="87" width="72" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#ffd54f" text-anchor="middle" dominant-baseline="central" x="352" y="101">H</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700" fill="#ffd54f" text-anchor="middle" dominant-baseline="central" x="352" y="101">H</text>
               <rect x="404" y="87" width="96" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
               <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#e8eaf0" text-anchor="middle" dominant-baseline="central" x="452" y="101">Large</text>
               <rect x="508" y="87" width="104" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
@@ -819,11 +841,11 @@
               <rect x="40" y="122" width="108" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
               <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#8a95b0" text-anchor="middle" dominant-baseline="central" x="94" y="136">WM-002</text>
               <rect x="156" y="122" width="72" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#69f0ae" text-anchor="middle" dominant-baseline="central" x="192" y="136">V</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700" fill="#69f0ae" text-anchor="middle" dominant-baseline="central" x="192" y="136">V</text>
               <rect x="236" y="122" width="72" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#69f0ae" text-anchor="middle" dominant-baseline="central" x="272" y="136">V</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700" fill="#69f0ae" text-anchor="middle" dominant-baseline="central" x="272" y="136">V</text>
               <rect x="316" y="122" width="72" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#5a6380" text-anchor="middle" dominant-baseline="central" x="352" y="136">-</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700" fill="#5a6380" text-anchor="middle" dominant-baseline="central" x="352" y="136">-</text>
               <rect x="404" y="122" width="96" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
               <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#e8eaf0" text-anchor="middle" dominant-baseline="central" x="452" y="136">Small</text>
               <rect x="508" y="122" width="104" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
@@ -832,11 +854,11 @@
               <rect x="40" y="157" width="108" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
               <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#8a95b0" text-anchor="middle" dominant-baseline="central" x="94" y="171">WM-003</text>
               <rect x="156" y="157" width="72" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#ffd54f" text-anchor="middle" dominant-baseline="central" x="192" y="171">H</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700" fill="#ffd54f" text-anchor="middle" dominant-baseline="central" x="192" y="171">H</text>
               <rect x="236" y="157" width="72" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#ff6e6e" text-anchor="middle" dominant-baseline="central" x="272" y="171">F</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700" fill="#ff6e6e" text-anchor="middle" dominant-baseline="central" x="272" y="171">F</text>
               <rect x="316" y="157" width="72" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#69f0ae" text-anchor="middle" dominant-baseline="central" x="352" y="171">V</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700" fill="#69f0ae" text-anchor="middle" dominant-baseline="central" x="352" y="171">V</text>
               <rect x="404" y="157" width="96" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
               <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#e8eaf0" text-anchor="middle" dominant-baseline="central" x="452" y="171">Medium</text>
               <rect x="508" y="157" width="104" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
@@ -859,22 +881,22 @@
               <text font-family="IBM Plex Mono,monospace" font-size="12" font-weight="600" fill="#4fc3f7" text-anchor="middle" dominant-baseline="central" x="444" y="251">FleshColor</text>
 
               <rect x="40" y="275" width="72" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#69f0ae" text-anchor="middle" dominant-baseline="central" x="76" y="289">V</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700" fill="#69f0ae" text-anchor="middle" dominant-baseline="central" x="76" y="289">V</text>
               <rect x="120" y="275" width="72" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#ff6e6e" text-anchor="middle" dominant-baseline="central" x="156" y="289">F</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700" fill="#ff6e6e" text-anchor="middle" dominant-baseline="central" x="156" y="289">F</text>
               <rect x="200" y="275" width="72" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#ffd54f" text-anchor="middle" dominant-baseline="central" x="236" y="289">H</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700" fill="#ffd54f" text-anchor="middle" dominant-baseline="central" x="236" y="289">H</text>
               <rect x="288" y="275" width="96" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
               <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#e8eaf0" text-anchor="middle" dominant-baseline="central" x="336" y="289">Large</text>
               <rect x="392" y="275" width="104" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
               <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#e8eaf0" text-anchor="middle" dominant-baseline="central" x="444" y="289">Red</text>
 
               <rect x="40" y="310" width="72" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#69f0ae" text-anchor="middle" dominant-baseline="central" x="76" y="324">V</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700" fill="#69f0ae" text-anchor="middle" dominant-baseline="central" x="76" y="324">V</text>
               <rect x="120" y="310" width="72" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#69f0ae" text-anchor="middle" dominant-baseline="central" x="156" y="324">V</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700" fill="#69f0ae" text-anchor="middle" dominant-baseline="central" x="156" y="324">V</text>
               <rect x="200" y="310" width="72" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#5a6380" text-anchor="middle" dominant-baseline="central" x="236" y="324">-</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700" fill="#5a6380" text-anchor="middle" dominant-baseline="central" x="236" y="324">-</text>
               <rect x="288" y="310" width="96" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
               <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#e8eaf0" text-anchor="middle" dominant-baseline="central" x="336" y="324">Small</text>
               <rect x="392" y="310" width="104" height="28" rx="3" fill="none" stroke="#dddddd" stroke-width="0.5"/>
@@ -883,40 +905,12 @@
               <!-- Divider -->
               <line x1="40" y1="358" x2="640" y2="358" stroke="#dddddd" stroke-width="0.5" stroke-dasharray="4 4"/>
 
-              <!-- GENOTYPE CODES -->
-              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="600" fill="#5a6380" letter-spacing="1" x="40" y="380">GENOTYPE CODES</text>
-
-              <rect x="40" y="390" width="44" height="44" rx="8" fill="#0d1f12" stroke="#69f0ae" stroke-width="1"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="20" font-weight="700" fill="#69f0ae" text-anchor="middle" dominant-baseline="central" x="62" y="412">V</text>
-              <text font-family="IBM Plex Mono,monospace" font-size="12" font-weight="600" fill="#e8eaf0" x="98" y="404">Homozygous Positive</text>
-              <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#5a6380" x="98" y="422">Carries the target allele (homozygous)</text>
-
-              <rect x="40" y="448" width="44" height="44" rx="8" fill="#2a2208" stroke="#ffd54f" stroke-width="1"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="20" font-weight="700" fill="#ffd54f" text-anchor="middle" dominant-baseline="central" x="62" y="470">H</text>
-              <text font-family="IBM Plex Mono,monospace" font-size="12" font-weight="600" fill="#e8eaf0" x="98" y="462">Heterozygous</text>
-              <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#5a6380" x="98" y="480">Carries one copy of each allele (hybrid)</text>
-
-              <rect x="40" y="506" width="44" height="44" rx="8" fill="#220d0d" stroke="#ff6e6e" stroke-width="1"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="20" font-weight="700" fill="#ff6e6e" text-anchor="middle" dominant-baseline="central" x="62" y="528">F</text>
-              <text font-family="IBM Plex Mono,monospace" font-size="12" font-weight="600" fill="#e8eaf0" x="98" y="520">Homozygous Negative</text>
-              <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#5a6380" x="98" y="538">Does not carry the target allele</text>
-
-              <rect x="40" y="564" width="44" height="44" rx="8" fill="#1e2333" stroke="#354060" stroke-width="1"/>
-              <text font-family="IBM Plex Mono,monospace" font-size="20" font-weight="700" fill="#5a6380" text-anchor="middle" dominant-baseline="central" x="62" y="586">-</text>
-              <text font-family="IBM Plex Mono,monospace" font-size="12" font-weight="600" fill="#e8eaf0" x="98" y="578">Missing / No call</text>
-              <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#5a6380" x="98" y="596">Excluded from all calculations automatically</text>
-
-              <!-- Divider -->
-              <line x1="40" y1="628" x2="640" y2="628" stroke="#dddddd" stroke-width="0.5" stroke-dasharray="4 4"/>
-
               <!-- TIPS -->
-              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="600" fill="#5a6380" letter-spacing="1" x="40" y="650">TIPS</text>
-              <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#8a95b0" x="40" y="670">&#x2713;  Row 1 must be the header (column names)</text>
-              <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#8a95b0" x="40" y="688">&#x2713;  Marker columns: V / F / H / - only</text>
-              <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#8a95b0" x="40" y="706">&#x2713;  Trait values: text (Red, Large) or numbers (8.5)</text>
-              <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#8a95b0" x="360" y="670">&#x2713;  Comma-separated or tab-separated both OK</text>
-              <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#8a95b0" x="360" y="688">&#x2713;  Empty cells or - treated as missing data</text>
-              <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#5a6380" x="360" y="706">    Excel: Save As &#x2192; CSV (Comma delimited)</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" font-weight="600" fill="#5a6380" letter-spacing="1" x="40" y="380">TIPS</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#8a95b0" x="40" y="400">&#x2713;  Row 1 must be the header (column names)</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#8a95b0" x="40" y="418">&#x2713;  Trait values: text (Red, Large) or numbers (8.5)</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#8a95b0" x="380" y="400">&#x2713;  Comma-separated or tab-separated both OK</text>
+              <text font-family="IBM Plex Mono,monospace" font-size="11" fill="#8a95b0" x="380" y="418">&#x2713;  Empty cells or - treated as missing data</text>
             </svg>
           </div>
         </div>
@@ -979,7 +973,7 @@
 
     <div class="step active" id="hap-step0">
       <div class="step-header">
-        <div class="step-num">A</div>
+        <div class="step-num">3</div>
         <div class="step-title">Configure Traits</div>
         <div class="step-status" id="hap-step0-status">—</div>
       </div>
@@ -994,7 +988,7 @@
 
     <div class="step locked" id="hap-step1">
       <div class="step-header">
-        <div class="step-num">B</div>
+        <div class="step-num">4</div>
         <div class="step-title">Select Markers to Combine</div>
         <div class="step-status" id="hap-step1-status">pick ≥ 2</div>
       </div>
@@ -1010,7 +1004,7 @@
 
     <div class="step locked" id="hap-step2">
       <div class="step-header">
-        <div class="step-num">C</div>
+        <div class="step-num">5</div>
         <div class="step-title">Assign Haplotype Classes</div>
         <div class="step-status" id="hap-step2-status">—</div>
       </div>
@@ -1022,7 +1016,7 @@
 
     <div class="step locked" id="hap-step3">
       <div class="step-header">
-        <div class="step-num">D</div>
+        <div class="step-num">6</div>
         <div class="step-title">Haplotype Metrics</div>
         <div class="step-status" id="hap-step3-status">—</div>
       </div>
@@ -1058,7 +1052,7 @@
 
     <div class="step active" id="bp-step1">
       <div class="step-header">
-        <div class="step-num">◆</div>
+        <div class="step-num">3</div>
         <div class="step-title">Box Plot Settings</div>
         <div class="step-status" id="bp-step1-status">—</div>
       </div>
@@ -1096,7 +1090,7 @@
 
     <div class="step locked" id="bp-step2">
       <div class="step-header">
-        <div class="step-num">◆</div>
+        <div class="step-num">4</div>
         <div class="step-title">Box Plot</div>
         <div class="step-status" id="bp-step2-status">—</div>
       </div>
@@ -1132,6 +1126,7 @@ const state = {
   bpMode: 'individual',           // box plot x-axis mode
   bpMarkers: [],
   bpTrait: null,
+  bpCatScores: {},               // categorical trait → { value: numericScore }
   hapMarkers: [],                 // selected markers for haplotype
   hapConfig: {},                  // trait -> { comboCycles: {haploStr -> 'pos'|'neg'|null} }
   hapResults: [],
@@ -1139,41 +1134,49 @@ const state = {
 };
 
 const GENOTYPE_CODES = new Set(['V','F','H','A','B','C','0','1','2','-','v','f','h','a','b','c']); // common genotype codes
-function isGenoCode(v) {
-  if (!v || v === '') return false;
-  const u = v.trim();
-  // Check current genoMap if populated, else fall back to hardcoded
-  const allMaps2 = Object.values(state.genoMaps);
-  const allMapped2 = allMaps2.flatMap(m => Object.values(m).flatMap(s => [...s]));
-  if (allMapped2.length > 0) return allMapped2.includes(u) || allMapped2.includes(u.toUpperCase());
-  return GENOTYPE_CODES.has(u) || GENOTYPE_CODES.has(u.toUpperCase());
-}
 const TYPE_CYCLE = ['id','marker','trait','skip'];
 
 const PRESETS = {
-  'F2':  { V:1, H:2, F:1, label:'1:2:1' },
-  'RIL': { V:1, H:0, F:1, label:'1:0:1' },
-  'BC1': { V:1, H:1, F:0, label:'1:1:0' },
-  'DH':  { V:1, H:0, F:1, label:'1:0:1' },
-  'custom': null,
+  'F2':    { V:1, H:2, F:1, label:'1:2:1', pop:'segregating' },
+  'RIL':   { V:1, H:0, F:1, label:'1:0:1', pop:'segregating' },
+  'BC1':   { V:1, H:1, F:0, label:'1:1:0', pop:'segregating' },
+  'DH':    { V:1, H:0, F:1, label:'1:0:1', pop:'segregating' },
+  'custom':{ V:null, H:null, F:null, label:null, pop:'segregating' },
+  'panel': { V:null, H:null, F:null, label:null, pop:'panel' },
 };
-function setPopType(type) {
-  state.populationType = type;
-  document.getElementById('pop-seg').classList.toggle('active', type === 'segregating');
-  document.getElementById('pop-panel').classList.toggle('active', type === 'panel');
-  document.getElementById('cross-type-row').style.display = type === 'segregating' ? 'flex' : 'none';
-}
 function applyPreset(name) {
   document.querySelectorAll('.cross-btn').forEach(b => b.classList.remove('active'));
   const clicked = document.querySelector(`.cross-btn[data-preset="${name}"]`);
   if (clicked) clicked.classList.add('active');
-  if (name !== 'custom' && PRESETS[name]) {
+
+  const isPanel = name === 'panel';
+  state.populationType = isPanel ? 'panel' : 'segregating';
+
+  // Show/hide ratio inputs
+  document.getElementById('cross-type-row').style.display = isPanel ? 'none' : 'flex';
+
+  // Update description hint
+  const descEl = document.getElementById('pop-type-desc');
+  if (descEl) {
+    descEl.textContent = isPanel
+      ? 'MAF will be calculated · chi-square test not applicable'
+      : 'Chi-square segregation test will be shown · MAF not calculated';
+  }
+
+  if (!isPanel && name !== 'custom' && PRESETS[name]) {
     const p = PRESETS[name];
     document.getElementById('ratio-V').value = p.V;
     document.getElementById('ratio-H').value = p.H;
     document.getElementById('ratio-F').value = p.F;
     document.getElementById('ratio-preview').textContent = '→ ' + p.label;
     state.expectedRatios = { V: p.V, H: p.H, F: p.F };
+  }
+
+  // Rebuild marker panels if already loaded
+  const step4 = document.getElementById('step4');
+  if (state.markerCols.length > 0 &&
+      (step4.classList.contains('active') || step4.classList.contains('done'))) {
+    buildMarkerPanels();
   }
 }
 function onRatioInput() {
@@ -1182,9 +1185,12 @@ function onRatioInput() {
   const F = parseFloat(document.getElementById('ratio-F').value) || 0;
   document.getElementById('ratio-preview').textContent = `→ ${V}:${H}:${F}`;
   state.expectedRatios = { V, H, F };
-  // Mark as custom
+  // Mark as custom (and ensure segregating mode)
   document.querySelectorAll('.cross-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.cross-btn[data-preset="custom"]').classList.add('active');
+  state.populationType = 'segregating';
+  const descEl = document.getElementById('pop-type-desc');
+  if (descEl) descEl.textContent = 'Chi-square segregation test will be shown · MAF not calculated';
 }
 
 // ─── Step 1: Upload ───────────────────────────────────────────────────────────
@@ -1218,6 +1224,7 @@ function parseCSV(text) {
   state.traitConfig = {}; state.markerConfig = {};
   state.genoMaps = {}; state.results = [];
   state.hapMarkers = []; state.hapConfig = {}; state.hapResults = [];
+  state.hapPanelsBuilt = false; state._hapPanelTraitKey = '';
   state.bpMarkers = []; state.bpTrait = null;
 
   // Reset UI steps back to locked
@@ -1255,8 +1262,8 @@ function parseCSV(text) {
   if (exportBar) exportBar.style.display = 'none';
   const hapExport = document.getElementById('hap-export-bar');
   if (hapExport) hapExport.style.display = 'none';
-  // Switch back to individual mode
-  switchMode('individual');
+  // Stay on current tab (don't force switch to individual)
+  switchMode(state.appMode || 'individual');
 
   const sep = lines[0].includes('\t') ? '\t' : ',';
   const headers = lines[0].split(sep).map(h => h.trim().replace(/^"|"$/g,''));
@@ -1382,8 +1389,12 @@ function confirmColumns() {
   const eb = document.getElementById('export-bar');
   if (eb) eb.style.display = 'none';
 
-  buildTraitPanels();
-  activate('step3');
+  if (state.appMode === 'boxplot') {
+    populateBpSelectors();
+  } else {
+    buildTraitPanels();
+    activate('step3');
+  }
   setStepDone('step2', `${state.markerCols.length} markers · ${state.traitCols.length} traits`);
 }
 
@@ -1418,7 +1429,6 @@ function buildTraitPanels() {
     const panel = document.createElement('div');
     panel.className = 'trait-panel';
     panel.id = `panel-${CSS.escape(trait)}`;
-    panel.id = `hap-panel-${CSS.escape(trait)}`;
     panel.innerHTML = `
       <div class="trait-panel-header">
         <span class="trait-name">${trait}</span>
@@ -1481,7 +1491,16 @@ function _renderTraitBodyInner(body, trait, uniqueVals, valueCounts) {
       const chip = document.createElement('div');
       chip.className = 'value-chip';
       chip.dataset.val = v;
-      chip.innerHTML = `${v}<span class="chip-count">(${valueCounts[v]})</span>`;
+      // Restore saved state from traitConfig
+      if (cfg.posValues.has(v)) {
+        chip.classList.add('positive');
+        chip.innerHTML = `${v}<span class="chip-label">POS</span><span class="chip-count">(${valueCounts[v]})</span>`;
+      } else if (cfg.negValues.has(v)) {
+        chip.classList.add('negative');
+        chip.innerHTML = `${v}<span class="chip-label">NEG</span><span class="chip-count">(${valueCounts[v]})</span>`;
+      } else {
+        chip.innerHTML = `${v}<span class="chip-count">(${valueCounts[v]})</span>`;
+      }
       chip.title = 'Click to cycle: unset → POSITIVE → NEGATIVE → unset';
       chip.addEventListener('click', () => cycleChip(chip, trait, v));
       chipsContainer.appendChild(chip);
@@ -1620,6 +1639,8 @@ function confirmTraits() {
   if (msgEl) msgEl.textContent = '';
   // Always reset markerConfig so auto-detect runs fresh
   state.markerConfig = {};
+  // Invalidate haplotype panels so they pick up new trait config
+  state.hapPanelsBuilt = false;
   buildMarkerPanels();
   activate('step4');
   setStepDone('step3', `${state.traitCols.length} trait(s) configured`);
@@ -2183,7 +2204,6 @@ function calcBinary(marker, trait, targetAllele, cfg) {
     else nV++; // override applied to unrecognized value — count as called
 
     if (pheno === null) return;
-    if (zoneForRole === 'missing' || zoneForRole === 'skip') return;
     const markerPos = zoneForRole === 'positive';
     const phenoPos = pheno === 'pos';
     if (markerPos && phenoPos) TP++;
@@ -2299,7 +2319,7 @@ function makeResultCard(r) {
 
     const mafRow = showMAF ? `
       <div class="maf-cr-item">
-        <div class="maf-cr-label">MAF</div>
+        <div class="maf-cr-label" data-tip="MAF" style="cursor:help;">MAF</div>
         <div class="maf-cr-val">${isNaN(r.maf)?'—':(r.maf*100).toFixed(1)+'%'}</div>
       </div>` : '';
 
@@ -2309,7 +2329,18 @@ function makeResultCard(r) {
         ${r._isHaplotype
           ? '<span style="font-family:var(--mono);font-size:10px;background:#1a2218;color:var(--green);padding:2px 8px;border-radius:2px;margin-left:4px;">HAPLOTYPE</span>'
           : `<span style="font-family:var(--mono);font-size:10px;background:#1a2218;color:var(--green);padding:2px 7px;border-radius:2px;">
-          ${(() => { const ov=state.markerConfig[r.marker]?.valZoneOverride||{}; const zm=state.markerConfig[r.marker]?.zoneMap||{}; const posVals=Object.keys({...zm,...Object.fromEntries(Object.entries(ov))}).filter(k=>{ const z=ov[k]!==undefined?ov[k]:zm[k]; return z==='positive'&&k!=='missing'; }); return posVals.length?posVals.join('/')+'=POS':'auto'; })()}
+          ${(() => {
+            const ov=state.markerConfig[r.marker]?.valZoneOverride||{};
+            const zm=state.markerConfig[r.marker]?.zoneMap||{};
+            const mMap=state.genoMaps[r.marker]||{};
+            // Get actual raw values (not role names) that are positive
+            const allRawVals=[...Object.values(mMap)].flatMap(s=>[...s]);
+            const posVals=allRawVals.filter(v=>{
+              const z=ov[v]!==undefined?ov[v]:(zm[genoRole(v,r.marker)]||'negative');
+              return z==='positive';
+            });
+            return posVals.length?posVals.join('/')+'=POS':'auto';
+          })()}
           </span>`}
         <span class="result-trait">${r.trait}</span>
       </div>
@@ -2318,43 +2349,44 @@ function makeResultCard(r) {
         <!-- PRIMARY METRICS: Accuracy / FNR / FPR / Call Rate -->
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
           <div class="metric-item">
-            <div class="metric-label">Accuracy</div>
+            <div class="metric-label" data-tip="Accuracy" style="cursor:help;">Accuracy</div>
             <div class="metric-value ${accColor}">${fmt(r.acc)}</div>
           </div>
           <div class="metric-item">
-            <div class="metric-label">FNR <span style="font-weight:400;opacity:0.6;font-size:9px">miss</span></div>
-            <div class="metric-value ${fnrColor}">${fmt(r.fnr)}</div>
-          </div>
-          <div class="metric-item">
-            <div class="metric-label">FPR <span style="font-weight:400;opacity:0.6;font-size:9px">false+</span></div>
+            <div class="metric-label" data-tip="FPR" style="cursor:help;">FPR <span style="font-weight:400;opacity:0.6;font-size:9px">false+</span></div>
             <div class="metric-value ${fprColor}">${fmt(r.fpr)}</div>
           </div>
           <div class="metric-item">
-            <div class="metric-label">Call Rate</div>
+            <div class="metric-label" data-tip="FNR" style="cursor:help;">FNR <span style="font-weight:400;opacity:0.6;font-size:9px">miss</span></div>
+            <div class="metric-value ${fnrColor}">${fmt(r.fnr)}</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label" data-tip="Call Rate" style="cursor:help;">Call Rate</div>
             <div class="metric-value">${isNaN(r.callRate)?'—':(r.callRate*100).toFixed(1)+'%'}</div>
           </div>
         </div>
 
         <!-- CONFUSION MATRIX -->
         <div class="confusion-mini">
-          <div class="cm-cell cm-tp"><div class="cm-label">TP</div><div class="cm-val">${r.TP}</div></div>
-          <div class="cm-cell cm-fp"><div class="cm-label">FP</div><div class="cm-val">${r.FP}</div></div>
-          <div class="cm-cell cm-fn"><div class="cm-label">FN</div><div class="cm-val">${r.FN}</div></div>
-          <div class="cm-cell cm-tn"><div class="cm-label">TN</div><div class="cm-val">${r.TN}</div></div>
+          <div class="cm-cell cm-tp"><div class="cm-label" data-tip="TP" style="cursor:help;">TP</div><div class="cm-val">${r.TP}</div></div>
+          <div class="cm-cell cm-fp"><div class="cm-label" data-tip="FP" style="cursor:help;">FP</div><div class="cm-val">${r.FP}</div></div>
+          <div class="cm-cell cm-fn"><div class="cm-label" data-tip="FN" style="cursor:help;">FN</div><div class="cm-val">${r.FN}</div></div>
+          <div class="cm-cell cm-tn"><div class="cm-label" data-tip="TN" style="cursor:help;">TN</div><div class="cm-val">${r.TN}</div></div>
         </div>
 
         <!-- SECONDARY METRICS -->
         <div class="maf-cr-row">
           ${mafRow}
-          <div class="maf-cr-item"><div class="maf-cr-label">SENS</div><div class="maf-cr-val">${fmt(r.sens)}</div></div>
-          <div class="maf-cr-item"><div class="maf-cr-label">SPEC</div><div class="maf-cr-val">${fmt(r.spec)}</div></div>
-          <div class="maf-cr-item"><div class="maf-cr-label">F1</div><div class="maf-cr-val">${fmt(r.f1)}</div></div>
-          <div class="maf-cr-item"><div class="maf-cr-label">N</div><div class="maf-cr-val">${r.N}</div></div>
+          <div class="maf-cr-item"><div class="maf-cr-label" data-tip="SENS" style="cursor:help;">SENS</div><div class="maf-cr-val">${fmt(r.sens)}</div></div>
+          <div class="maf-cr-item"><div class="maf-cr-label" data-tip="SPEC" style="cursor:help;">SPEC</div><div class="maf-cr-val">${fmt(r.spec)}</div></div>
+          <div class="maf-cr-item"><div class="maf-cr-label" data-tip="Precision" style="cursor:help;">PREC</div><div class="maf-cr-val">${fmt(r.prec)}</div></div>
+          <div class="maf-cr-item"><div class="maf-cr-label" data-tip="F1" style="cursor:help;">F1</div><div class="maf-cr-val">${fmt(r.f1)}</div></div>
+          <div class="maf-cr-item"><div class="maf-cr-label" data-tip="N" style="cursor:help;">N</div><div class="maf-cr-val">${r.N}</div></div>
+        </div>
         <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:8px;">
           <button onclick="toggleCardPlot(this, '${r.marker}', '${r.trait}')"
             style="font-family:var(--mono);font-size:10px;color:var(--text3);background:none;border:1px solid var(--border);border-radius:3px;padding:3px 10px;cursor:pointer;width:100%;">▼ Show Box Plot</button>
           <div class="card-plot-wrap" style="display:none;margin-top:8px;overflow-x:auto;"></div>
-        </div>
         </div>
       </div>
     `;
@@ -2366,7 +2398,18 @@ function makeResultCard(r) {
         ${r._isHaplotype
           ? '<span style="font-family:var(--mono);font-size:10px;background:#1a2218;color:var(--green);padding:2px 8px;border-radius:2px;margin-left:4px;">HAPLOTYPE</span>'
           : `<span style="font-family:var(--mono);font-size:10px;background:#1a2218;color:var(--green);padding:2px 7px;border-radius:2px;">
-          ${(() => { const ov=state.markerConfig[r.marker]?.valZoneOverride||{}; const zm=state.markerConfig[r.marker]?.zoneMap||{}; const posVals=Object.keys({...zm,...Object.fromEntries(Object.entries(ov))}).filter(k=>{ const z=ov[k]!==undefined?ov[k]:zm[k]; return z==='positive'&&k!=='missing'; }); return posVals.length?posVals.join('/')+'=POS':'auto'; })()}
+          ${(() => {
+            const ov=state.markerConfig[r.marker]?.valZoneOverride||{};
+            const zm=state.markerConfig[r.marker]?.zoneMap||{};
+            const mMap=state.genoMaps[r.marker]||{};
+            // Get actual raw values (not role names) that are positive
+            const allRawVals=[...Object.values(mMap)].flatMap(s=>[...s]);
+            const posVals=allRawVals.filter(v=>{
+              const z=ov[v]!==undefined?ov[v]:(zm[genoRole(v,r.marker)]||'negative');
+              return z==='positive';
+            });
+            return posVals.length?posVals.join('/')+'=POS':'auto';
+          })()}
           </span>`}
         <span class="result-trait">${r.trait}</span>
       </div>
@@ -2435,7 +2478,7 @@ function exportCSV() {
   const headers = [
     'Marker', 'Trait',
     'Positive_Genotype', 'Positive_Trait',
-    'N', 'Accuracy', 'FNR', 'FPR',
+    'N', 'Accuracy', 'FPR', 'FNR',
     'Sensitivity', 'Specificity', 'Precision', 'F1',
     'TP', 'TN', 'FP', 'FN',
     ...(showMAF ? ['MAF'] : []),
@@ -2447,7 +2490,7 @@ function exportCSV() {
       r.marker, r.trait,
       getPosGeno(r.marker), getPosTrait(r.trait),
       r.N,
-      pct(r.acc), pct(r.fnr), pct(r.fpr),
+      pct(r.acc), pct(r.fpr), pct(r.fnr),
       pct(r.sens), pct(r.spec), pct(r.prec), pct(r.f1),
       r.TP, r.TN, r.FP, r.FN,
       ...(showMAF ? [pct(r.maf)] : []),
@@ -2726,7 +2769,30 @@ function buildHaplotypeTable() {
   state.hapConfig = {};
   state.traitCols.forEach(trait => {
     state.hapConfig[trait] = { cycles: {} };
-    allHaps.forEach(h => { state.hapConfig[trait].cycles[h] = null; });
+    const cfg = state.traitConfig[trait];
+
+    // Compute pos ratio per haplotype using existing traitConfig
+    const hapPosCount = {}, hapTotalCount = {};
+    state.raw.forEach((row, i) => {
+      const hap = sampleHaps[i];
+      if (!hap) return;
+      const pheno = classifyPhenotype((row[trait]||'').trim(), cfg);
+      if (pheno === null) return;
+      hapTotalCount[hap] = (hapTotalCount[hap]||0) + 1;
+      if (pheno === 'pos') hapPosCount[hap] = (hapPosCount[hap]||0) + 1;
+    });
+
+    const ratios = {};
+    allHaps.forEach(h => {
+      ratios[h] = hapTotalCount[h] > 0 ? (hapPosCount[h]||0) / hapTotalCount[h] : null;
+    });
+    const validRatios = Object.values(ratios).filter(r => r !== null);
+    const mid = validRatios.length > 0 ? (Math.max(...validRatios) + Math.min(...validRatios)) / 2 : 0.5;
+
+    allHaps.forEach(h => {
+      const r = ratios[h];
+      state.hapConfig[trait].cycles[h] = r === null ? null : r >= mid ? 'pos' : 'neg';
+    });
   });
 
   const container = document.getElementById('hap-trait-panels');
@@ -2774,9 +2840,18 @@ function buildHaplotypeTable() {
 
       const classTd = document.createElement('td');
       const badge = document.createElement('div');
-      badge.className = 'value-chip';
       badge.style.cssText = 'display:inline-block;cursor:pointer;';
-      badge.textContent = 'unset';
+      const autoClass = state.hapConfig[trait].cycles[hap];
+      if (autoClass === 'pos') {
+        badge.className = 'value-chip positive';
+        badge.textContent = 'POS';
+      } else if (autoClass === 'neg') {
+        badge.className = 'value-chip negative';
+        badge.textContent = 'NEG';
+      } else {
+        badge.className = 'value-chip';
+        badge.textContent = 'unset';
+      }
       badge.addEventListener('click', () => cycleHapClass(badge, trait, hap));
       classTd.appendChild(badge);
       tr.appendChild(classTd);
@@ -2912,12 +2987,12 @@ function exportHaplotypeCSV() {
 
   const fmt = v => isNaN(v) ? '' : v.toFixed(4);
   const hdrs = ['Haplotype','Trait','Positive_Haplotype','Positive_Trait',
-    'N','Accuracy','FNR','FPR','Sensitivity','Specificity','Precision','F1',
+    'N','Accuracy','FPR','FNR','Sensitivity','Specificity','Precision','F1',
     'TP','TN','FP','FN','CallRate'];
   const rows = state.hapResults.map(r => {
     const cr = isNaN(r.nMiss) ? '' : (1 - r.nMiss/state.raw.length).toFixed(4);
     return [r.markers.join('+'), r.trait, getPosHap(r.markers), getPosTrait(r.trait),
-      r.N, fmt(r.acc), fmt(r.fnr), fmt(r.fpr),
+      r.N, fmt(r.acc), fmt(r.fpr), fmt(r.fnr),
       fmt(r.sens), fmt(r.spec), fmt(r.prec), fmt(r.f1),
       r.TP, r.TN, r.FP, r.FN, cr].join(',');
   });
@@ -3082,13 +3157,10 @@ function drawBoxPlot() {
   const useNumeric = numeric || (!numeric && Object.values(catScores || {}).some(v => v != null));
 
   // Sort group keys by genoRole order: hom_pos → het → hom_neg → then others
-  const roleOrder = {'hom_pos':0,'het':1,'hom_neg':2};
+  // Sort by median phenotype value (ascending)
   let groupKeys = Object.keys(groups).sort((a, b) => {
-    const ra = genoRole(a, state.bpMarkers[0]);
-    const rb = genoRole(b, state.bpMarkers[0]);
-    const oa = roleOrder[ra] ?? 99;
-    const ob = roleOrder[rb] ?? 99;
-    return oa !== ob ? oa - ob : a.localeCompare(b);
+    const med = arr => { const s=[...arr].sort((x,y)=>x-y); return s[Math.floor(s.length/2)]; };
+    return med(groups[a]) - med(groups[b]);
   });
   if (groupKeys.length === 0) { alert('No data to plot.'); return; }
 
@@ -3129,10 +3201,14 @@ function seededRand(seed) { const x=Math.sin(seed+1)*10000; return x-Math.floor(
 function buildBoxPlotSVG(groups, keys, overrideW, overrideH) {
   const GENO_COL={V:'#69f0ae',H:'#ffd54f',F:'#ff6e6e'};
   const HAP_PAL=['#4fc3f7','#ce93d8','#69f0ae','#ffd54f','#ff6e6e','#80cbc4','#ffab91','#b39ddb'];
-  const PAD={top:30,right:20,bottom:50,left:52};
-  const BOX_W=overrideW ? Math.min(40, Math.floor((overrideW - PAD.left - PAD.right) / keys.length / 2)) : 60;
-  const GROUP_W=overrideW ? Math.floor((overrideW - PAD.left - PAD.right) / keys.length) : Math.max(100,BOX_W+40);
-  const H=overrideH||360, W=overrideW||Math.max(500,keys.length*GROUP_W+PAD.left+PAD.right);
+  const PAD={top:30,right:40,bottom:50,left:52};
+  const plotW_avail = (overrideW || 600) - PAD.left - PAD.right;
+  const GROUP_W = overrideW
+    ? Math.floor(plotW_avail / keys.length)
+    : Math.max(120, Math.floor(plotW_avail / keys.length));
+  const BOX_W = Math.min(60, Math.floor(GROUP_W * 0.45));
+  const W = overrideW || Math.max(500, keys.length * GROUP_W + PAD.left + PAD.right);
+  const H=overrideH||360;
   const plotH=H-PAD.top-PAD.bottom;
   const allVals=keys.flatMap(k=>groups[k]);
   const allStats=Object.fromEntries(keys.map(k=>[k,boxStats(groups[k])]));
@@ -3149,8 +3225,9 @@ function buildBoxPlotSVG(groups, keys, overrideW, overrideH) {
     return HAP_PAL[i%HAP_PAL.length];
   };
 
-  let svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="background:#ffffff;border-radius:8px;border:1px solid #e0e0e0;font-family:IBM Plex Mono,monospace;">`;
-  const title=(state.bpMode==='individual'?state.bpMarkers[0]:state.bpMarkers.join('+'))+' vs '+state.bpTrait;
+  let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;max-width:${W}px;height:auto;background:#ffffff;border-radius:8px;border:1px solid #e0e0e0;font-family:IBM Plex Mono,monospace;">`;
+  const markerLabel=state.bpMode==='individual'?state.bpMarkers[0]:state.bpMarkers.join('+');
+  const title=`Phenotype distribution by ${markerLabel} genotype`;
   svg+=`<text x="${W/2}" y="22" text-anchor="middle" font-size="12" font-weight="600" fill="#1a1a1a">${title}</text>`;
   yTicks.forEach(v=>{
     const y=yScale(v);
@@ -3179,11 +3256,11 @@ function buildBoxPlotSVG(groups, keys, overrideW, overrideH) {
     const labelY=PAD.top+plotH+20;
     if(state.bpMode==='individual'){
       const lRole=genoRole(key,state.bpMarkers[0]);
-      const lCol=lRole==='hom_pos'?'#69f0ae':lRole==='het'?'#ffd54f':lRole==='hom_neg'?'#ff6e6e':'#8a95b0';
+      const lCol='#333333';
       svg+=`<text x="${cx}" y="${labelY}" text-anchor="middle" font-size="12" font-weight="700" fill="${lCol}">${key}</text>`;
     } else {
       const hapParts=key.split('|'), cw=18; let cx2=cx-hapParts.length*cw/2+cw/2;
-      hapParts.forEach((v,vi)=>{ const bpM=state.bpMarkers[vi]; const r=bpM?genoRole(v,bpM):''; const col=r==='hom_pos'?'#69f0ae':r==='het'?'#ffd54f':r==='hom_neg'?'#ff6e6e':'#8a95b0'; svg+=`<text x="${cx2}" y="${labelY}" text-anchor="middle" font-size="11" font-weight="700" fill="${col}">${v}</text>`; cx2+=cw; });
+      hapParts.forEach((v,vi)=>{ const bpM=state.bpMarkers[vi]; const r=bpM?genoRole(v,bpM):''; const col='#333333'; svg+=`<text x="${cx2}" y="${labelY}" text-anchor="middle" font-size="11" font-weight="700" fill="${col}">${v}</text>`; cx2+=cw; });
     }
     svg+=`<text x="${cx}" y="${labelY+16}" text-anchor="middle" font-size="9" fill="#888888">n=${st.n}</text>`;
     svg+=`<rect x="${bLeft-5}" y="${yWH-5}" width="${BOX_W+10}" height="${yWL-yWH+10}" fill="transparent"><title>${key} n=${st.n}\nmed=${st.med.toFixed(2)} mean=${st.mean.toFixed(2)}\nQ1=${st.q1.toFixed(2)} Q3=${st.q3.toFixed(2)}</title></rect>`;
@@ -3208,8 +3285,9 @@ function buildBarChartSVG(groups, keys) {
   const barW=Math.max(8,Math.min(22,(GROUP_W-16)/cats.length));
   const groupOffset=k=>PAD.left+keys.indexOf(k)*GROUP_W+GROUP_W/2;
 
-  let svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="background:#ffffff;border-radius:8px;border:1px solid #e0e0e0;font-family:IBM Plex Mono,monospace;">`;
-  const title=(state.bpMode==='individual'?state.bpMarkers[0]:state.bpMarkers.join('+'))+' vs '+state.bpTrait;
+  let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;max-width:${W}px;height:auto;background:#ffffff;border-radius:8px;border:1px solid #e0e0e0;font-family:IBM Plex Mono,monospace;">`;
+  const markerLabel=state.bpMode==='individual'?state.bpMarkers[0]:state.bpMarkers.join('+');
+  const title=`Phenotype distribution by ${markerLabel} genotype`;
   svg+=`<text x="${(W-PAD.right)/2}" y="26" text-anchor="middle" font-size="12" font-weight="600" fill="#1a1a1a">${title}</text>`;
   yTicks.forEach(v=>{ const y=yScale(v); svg+=`<line x1="${PAD.left}" y1="${y}" x2="${W-PAD.right}" y2="${y}" stroke="#dddddd" stroke-width="0.5"/><text x="${PAD.left-8}" y="${y+4}" text-anchor="end" font-size="10" fill="#555555">${v}</text>`; });
   svg+=`<line x1="${PAD.left}" y1="${PAD.top}" x2="${PAD.left}" y2="${PAD.top+plotH}" stroke="#dddddd" stroke-width="1"/>`;
@@ -3230,11 +3308,11 @@ function buildBarChartSVG(groups, keys) {
     const labelY=PAD.top+plotH+18;
     if(state.bpMode==='individual'){
       const blRole=genoRole(k,state.bpMarkers[0]);
-      const blCol=blRole==='hom_pos'?'#69f0ae':blRole==='het'?'#ffd54f':blRole==='hom_neg'?'#ff6e6e':'#8a95b0';
+      const blCol='#333333';
       svg+=`<text x="${cx}" y="${labelY}" text-anchor="middle" font-size="12" font-weight="700" fill="${blCol}">${k}</text>`;
     } else {
       const hapParts2=k.split('|'), cw2=18; let cx2b=cx-hapParts2.length*cw2/2+cw2/2;
-      hapParts2.forEach((v,vi)=>{ const bpM=state.bpMarkers[vi]; const r=bpM?genoRole(v,bpM):''; const col=r==='hom_pos'?'#69f0ae':r==='het'?'#ffd54f':r==='hom_neg'?'#ff6e6e':'#8a95b0'; svg+=`<text x="${cx2b}" y="${labelY}" text-anchor="middle" font-size="11" font-weight="700" fill="${col}">${v}</text>`; cx2b+=cw2; });
+      hapParts2.forEach((v,vi)=>{ const bpM=state.bpMarkers[vi]; const r=bpM?genoRole(v,bpM):''; const col='#333333'; svg+=`<text x="${cx2b}" y="${labelY}" text-anchor="middle" font-size="11" font-weight="700" fill="${col}">${v}</text>`; cx2b+=cw2; });
     }
     svg+=`<text x="${cx}" y="${labelY+16}" text-anchor="middle" font-size="9" fill="#888888">n=${groups[k].length}</text>`;
   });
@@ -3247,6 +3325,8 @@ function buildBarChartSVG(groups, keys) {
 
 
 // ─── Box Plot Export ──────────────────────────────────────────────────────────
+
+
 function exportBoxPlotSVG() {
   const svg = document.querySelector('#bp-canvas-wrap svg');
   if (!svg) return;
@@ -3264,25 +3344,21 @@ function exportBoxPlotPNG() {
   if (!svg) return;
   const svgData = new XMLSerializer().serializeToString(svg);
   const canvas = document.createElement('canvas');
-  const scale = 3; // high-res
+  const scale = 3;
   const w = svg.viewBox.baseVal.width || svg.clientWidth;
   const h = svg.viewBox.baseVal.height || svg.clientHeight;
-  canvas.width = w * scale;
-  canvas.height = h * scale;
+  canvas.width = w * scale; canvas.height = h * scale;
   const ctx = canvas.getContext('2d');
   ctx.scale(scale, scale);
-  // Fill background
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
   const img = new Image();
   const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
   img.onload = () => {
     ctx.drawImage(img, 0, 0);
     const a = document.createElement('a');
     a.download = (state.inputFileName ? state.inputFileName + '_' : '') +
-      state.bpMarkers.join('+') + '_vs_' + state.bpTrait + '.png';
-    a.href = canvas.toDataURL('image/png');
-    a.click();
+      state.bpMarkers.join('+') + '_' + state.bpTrait + '.png';
+    a.href = canvas.toDataURL('image/png'); a.click();
   };
   img.src = URL.createObjectURL(svgBlob);
 }
@@ -3303,13 +3379,25 @@ function toggleCardPlot(btn, marker, trait) {
   const numeric = isNumericTrait(trait);
   const catScores = !numeric ? (state.bpCatScores[trait] || buildDefaultCatScores(trait)) : null;
   const groups = {};
-  const ORDER = ['V','H','F'];
+  const isHap = marker.includes('+');
+  const hapMarkers = isHap ? marker.split('+') : null;
 
   state.raw.forEach(row => {
-    const rawG = (row[marker]||'').trim();
-    const role = genoRole(rawG, marker);
-    if (role === 'missing') return;
-    const gKey = roleChar(role); // V / H / F for display
+    let gKey;
+    if (isHap) {
+      // Haplotype mode: group by haplotype string
+      const genos = hapMarkers.map(m => {
+        const v = (row[m]||'').trim();
+        return genoRole(v, m) === 'missing' ? null : v;
+      });
+      if (genos.some(g => g === null)) return;
+      gKey = genos.join('|');
+    } else {
+      const rawG = (row[marker]||'').trim();
+      const role = genoRole(rawG, marker);
+      if (role === 'missing') return;
+      gKey = roleChar(role);
+    }
     const val = (row[trait]||'').trim();
     if (!val || isMissingVal(val)) return;
     if (!groups[gKey]) groups[gKey] = [];
@@ -3321,7 +3409,10 @@ function toggleCardPlot(btn, marker, trait) {
     }
   });
 
-  const groupKeys = ORDER.filter(k => groups[k] && groups[k].length > 0);
+  // Sort by median phenotype value (ascending)
+  const med = arr => { const s=[...arr].sort((x,y)=>x-y); return s[Math.floor(s.length/2)]; };
+  const groupKeys = Object.keys(groups).filter(k => groups[k].length > 0)
+    .sort((a, b) => med(groups[a]) - med(groups[b]));
   if (groupKeys.length === 0) {
     wrap.innerHTML = '<div style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:8px;">No plottable data — assign numeric scores to categories first in Box Plot tab.</div>';
     return;
@@ -3329,12 +3420,93 @@ function toggleCardPlot(btn, marker, trait) {
 
   // Temporarily override bpMarkers/bpTrait for buildBoxPlotSVG
   const prevMarkers = state.bpMarkers, prevTrait = state.bpTrait, prevMode = state.bpMode;
-  state.bpMarkers = [marker]; state.bpTrait = trait; state.bpMode = 'individual';
+  state.bpMarkers = isHap ? hapMarkers : [marker];
+  state.bpTrait = trait;
+  state.bpMode = isHap ? 'haplotype' : 'individual';
 
-  const svgStr = buildBoxPlotSVG(groups, groupKeys, 340, 200);
+  const svgStr = buildBoxPlotSVG(groups, groupKeys, 600, 320);
 
   state.bpMarkers = prevMarkers; state.bpTrait = prevTrait; state.bpMode = prevMode;
-  wrap.innerHTML = svgStr;
+
+  // Render SVG + download buttons
+  wrap.innerHTML = '';
+  const svgWrap = document.createElement('div');
+  svgWrap.style.overflowX = 'auto';
+  svgWrap.innerHTML = svgStr;
+  wrap.appendChild(svgWrap);
+
+  const dlRow = document.createElement('div');
+  dlRow.style.cssText = 'display:flex;gap:8px;margin-top:8px;';
+  dlRow.innerHTML = `
+    <button class="btn btn-secondary" style="font-size:11px;padding:4px 12px;"
+      onclick="cardPlotDownload('${marker}','${trait}','svg')">⬇ SVG</button>
+    <button class="btn btn-secondary" style="font-size:11px;padding:4px 12px;"
+      onclick="cardPlotDownload('${marker}','${trait}','png')">⬇ PNG</button>`;
+  wrap.appendChild(dlRow);
+}
+
+function cardPlotDownload(marker, trait, fmt) {
+  const numeric = isNumericTrait(trait);
+  const catScores = !numeric ? (state.bpCatScores[trait] || buildDefaultCatScores(trait)) : null;
+  const groups = {};
+  const isHap = marker.includes('+');
+  const hapMarkers = isHap ? marker.split('+') : null;
+  state.raw.forEach(row => {
+    let gKey;
+    if (isHap) {
+      const genos = hapMarkers.map(m => { const v=(row[m]||'').trim(); return genoRole(v,m)==='missing'?null:v; });
+      if (genos.some(g=>g===null)) return;
+      gKey = genos.join('|');
+    } else {
+      const rawG = (row[marker]||'').trim();
+      const role = genoRole(rawG, marker);
+      if (role === 'missing') return;
+      gKey = roleChar(role);
+    }
+    const val = (row[trait]||'').trim();
+    if (!val || isMissingVal(val)) return;
+    if (!groups[gKey]) groups[gKey] = [];
+    if (numeric) { const n = parseFloat(val); if (!isNaN(n)) groups[gKey].push(n); }
+    else { const score = catScores[val]; if (score != null && !isNaN(score)) groups[gKey].push(score); }
+  });
+  const _med = arr => { const s=[...arr].sort((x,y)=>x-y); return s[Math.floor(s.length/2)]; };
+  const groupKeys = Object.keys(groups).filter(k=>groups[k]?.length>0)
+    .sort((a,b) => _med(groups[a]) - _med(groups[b]));
+  if (!groupKeys.length) return;
+
+  const prevMarkers = state.bpMarkers, prevTrait = state.bpTrait, prevMode = state.bpMode;
+  state.bpMarkers = isHap ? hapMarkers : [marker];
+  state.bpTrait = trait;
+  state.bpMode = isHap ? 'haplotype' : 'individual';
+  const svgStr = buildBoxPlotSVG(groups, groupKeys, 800, 400);
+  state.bpMarkers = prevMarkers; state.bpTrait = prevTrait; state.bpMode = prevMode;
+
+  const fname = `${marker}_${trait}`;
+  if (fmt === 'svg') {
+    const blob = new Blob([svgStr], {type:'image/svg+xml'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = fname + '.svg'; a.click();
+  } else {
+    const wMatch = svgStr.match(/width="([\d.]+)"/);
+    const hMatch = svgStr.match(/height="([\d.]+)"/);
+    const w = wMatch ? parseFloat(wMatch[1]) : 600;
+    const h = hMatch ? parseFloat(hMatch[1]) : 320;
+    const canvas = document.createElement('canvas');
+    const scale = 2;
+    canvas.width = w * scale; canvas.height = h * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
+    const img = new Image();
+    const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0);
+      const a = document.createElement('a');
+      a.download = fname + '.png';
+      a.href = canvas.toDataURL('image/png'); a.click();
+    };
+    img.src = URL.createObjectURL(svgBlob);
+  }
 }
 
 function buildDefaultCatScores(trait) {
@@ -3363,6 +3535,52 @@ function setStepDone(stepId, msg) {
   const status = step.querySelector('.step-status');
   if (status) status.textContent = '✓ ' + msg;
 }
+
+// ── Metric Tooltip ────────────────────────────────────────────
+const METRIC_TIPS = {
+  'Accuracy':    { desc: 'Proportion of all samples correctly classified', formula: '(TP + TN) / (TP + TN + FP + FN)' },
+  'FNR':         { desc: 'False Negative Rate — POS samples missed by marker', formula: 'FN / (TP + FN)' },
+  'FPR':         { desc: 'False Positive Rate — NEG samples wrongly called POS', formula: 'FP / (FP + TN)' },
+  'Call Rate':   { desc: 'Proportion of samples with a valid genotype call', formula: 'Called / Total' },
+  'SENS':        { desc: 'Sensitivity (Recall) — ability to detect true positives', formula: 'TP / (TP + FN)' },
+  'SPEC':        { desc: 'Specificity — ability to correctly identify negatives', formula: 'TN / (TN + FP)' },
+  'Precision':   { desc: 'Proportion of POS calls that are truly positive', formula: 'TP / (TP + FP)' },
+  'F1':          { desc: 'Harmonic mean of Sensitivity and Precision', formula: '2 × (Sens × Prec) / (Sens + Prec)' },
+  'TP':          { desc: 'True Positive — correctly called as POS', formula: null },
+  'TN':          { desc: 'True Negative — correctly called as NEG', formula: null },
+  'FP':          { desc: 'False Positive — NEG sample called as POS', formula: null },
+  'FN':          { desc: 'False Negative — POS sample missed (called NEG)', formula: null },
+  'N':           { desc: 'Number of samples with both genotype and phenotype data', formula: null },
+  'MAF':         { desc: 'Minor Allele Frequency — frequency of the less common allele', formula: 'min(p, 1−p)' },
+};
+
+function showMetricTip(el, key) {
+  const tt = document.getElementById('metric-tooltip');
+  if (!tt) return;
+  const tip = METRIC_TIPS[key]; if (!tip) return;
+  tt.querySelector('.tt-title').textContent = key;
+  tt.querySelector('.tt-desc').textContent = tip.desc;
+  tt.querySelector('.tt-formula').textContent = tip.formula ? '= ' + tip.formula : '';
+  const r = el.getBoundingClientRect();
+  tt.style.left = Math.min(r.left, window.innerWidth - 260) + 'px';
+  tt.style.top = (r.bottom + 6) + 'px';
+  tt.style.opacity = '1';
+}
+function hideMetricTip() {
+  const tt = document.getElementById('metric-tooltip');
+  if (tt) tt.style.opacity = '0';
+}
+
+document.addEventListener('mouseover', e => {
+  const el = e.target.closest('[data-tip]');
+  if (el) showMetricTip(el, el.dataset.tip);
+});
+document.addEventListener('mouseout', e => {
+  const el = e.target.closest('[data-tip]');
+  if (el) hideMetricTip();
+});
+
 </script>
+<div id="metric-tooltip"><div class="tt-title"></div><div class="tt-desc"></div><div class="tt-formula"></div></div>
 </body>
 </html>
